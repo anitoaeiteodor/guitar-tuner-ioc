@@ -5,6 +5,7 @@ import random
 import json
 from PySide6 import QtCore, QtWidgets, QtGui
 from playsound import playsound
+import threading
 
 class MainDisplay(QtWidgets.QWidget):
     def __init__(self):
@@ -14,12 +15,26 @@ class MainDisplay(QtWidgets.QWidget):
 
         self.buttons = []
         letters = ['E', 'A', 'D', 'G', 'B', 'E']
+        self.soundPaths = ['./sounds/6th_String_E_64kb.mp3',
+                      './sounds/5th_String_A_64kb.mp3',
+                      './sounds/4th_String_D_64kb.mp3',
+                      './sounds/3rd_String_G_64kb.mp3',
+                      './sounds/2nd_String_B_64kb.mp3',
+                      './sounds/1st_String_E_64kb.mp3',]
+        
+        methods = [self.buttonClicked6th,
+                   self.buttonClicked5th,
+                   self.buttonClicked4th,
+                   self.buttonClicked3rd,
+                   self.buttonClicked2nd,
+                   self.buttonClicked1st]
+        methods.reverse()
         for i in range(6):
             self.buttons.append(QtWidgets.QPushButton(letters[i]))
         
-        for button in self.buttons:
+        for method, button in zip(methods, self.buttons):
             self.layout.addWidget(button)
-            button.clicked.connect(self.buttonClicked)
+            button.clicked.connect(method)
         
     def colorWidget(self, colorPallete):
         style = 'background-color: ' + colorPallete['main'] + '; ' + \
@@ -27,9 +42,23 @@ class MainDisplay(QtWidgets.QWidget):
         for i in range(len(self.buttons)):
             self.buttons[i].setStyleSheet(style)
 
-    def buttonClicked(self):
-        
+    def buttonClicked6th(self):
+        threading.Thread(target=playsound, args=(self.soundPaths[5],), daemon=True).start()
 
+    def buttonClicked5th(self):
+        threading.Thread(target=playsound, args=(self.soundPaths[4],), daemon=True).start()
+
+    def buttonClicked4th(self):
+        threading.Thread(target=playsound, args=(self.soundPaths[3],), daemon=True).start()
+
+    def buttonClicked3rd(self):
+        threading.Thread(target=playsound, args=(self.soundPaths[2],), daemon=True).start()
+
+    def buttonClicked2nd(self):
+        threading.Thread(target=playsound, args=(self.soundPaths[1],), daemon=True).start()
+
+    def buttonClicked1st(self):
+        threading.Thread(target=playsound, args=(self.soundPaths[0],), daemon=True).start()
 
 class MenuButtons(QtWidgets.QWidget):
     def __init__(self) -> None:
