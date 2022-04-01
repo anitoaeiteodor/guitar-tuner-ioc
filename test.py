@@ -6,6 +6,10 @@ import json
 from PySide6 import QtCore, QtWidgets, QtGui
 from playsound import playsound
 import threading
+import ttsAndstt
+import time
+
+command = ''
 
 class MainDisplay(QtWidgets.QWidget):
     def __init__(self):
@@ -35,12 +39,32 @@ class MainDisplay(QtWidgets.QWidget):
         for method, button in zip(methods, self.buttons):
             self.layout.addWidget(button)
             button.clicked.connect(method)
+
+        threading.Thread(target=self.checkForCommands, daemon=True).start()
         
     def colorWidget(self, colorPallete):
         style = 'background-color: ' + colorPallete['main'] + '; ' + \
                 'font-size: 32px'
         for i in range(len(self.buttons)):
             self.buttons[i].setStyleSheet(style)
+
+    def checkForCommands(self):
+        global command
+        while True:
+            if command != '':
+                print(command)
+            if command == 'A':
+                self.buttonClicked2nd()
+                command = ''
+            if command == 'B':
+                self.buttonClicked5th()
+                command = ''
+            if command == 'C':
+                self.buttonClicked3rd()
+                command = ''
+            
+            time.sleep(1)
+
 
     def buttonClicked6th(self):
         threading.Thread(target=playsound, args=(self.soundPaths[5],), daemon=True).start()
@@ -60,6 +84,7 @@ class MainDisplay(QtWidgets.QWidget):
     def buttonClicked1st(self):
         threading.Thread(target=playsound, args=(self.soundPaths[0],), daemon=True).start()
 
+
 class MenuButtons(QtWidgets.QWidget):
     def __init__(self) -> None:
         super().__init__()
@@ -68,17 +93,32 @@ class MenuButtons(QtWidgets.QWidget):
 
         self.buttonTuner = QtWidgets.QPushButton('Tuner')
         self.buttonTools = QtWidgets.QPushButton('Tools')
+        self.buttonListen = QtWidgets.QPushButton('Listen')
 
         self.buttonTuner.setStyleSheet('padding: 0px')
 
         self.layout.addWidget(self.buttonTuner)
         self.layout.addWidget(self.buttonTools)
+        self.layout.addWidget(self.buttonListen)
+
+        self.buttonListen.clicked.connect(self.buttonClickedListen)
+        self.beginListening = False
 
     def colorWidget(self, colorPallete):
         self.buttonTools.setStyleSheet('background-color: ' + colorPallete['main'])
         self.buttonTuner.setStyleSheet('background-color: ' + colorPallete['main'])
+        self.buttonListen.setStyleSheet('background-color: ' + colorPallete['main'])
 
-    
+    def listenLoop(self):
+        global command
+        command = ttsAndstt.listen()
+        print(command)
+
+    def buttonClickedListen(self):
+        self.beginListening = not self.beginListening
+        threading.Thread(target=self.listenLoop, daemon=True).start()
+        print(self.beginListening)
+
 
 class GuitarTuner(QtWidgets.QWidget):
     def __init__(self, colors):
@@ -100,7 +140,7 @@ class GuitarTuner(QtWidgets.QWidget):
         self.layout.addWidget(self.menu)
 
         self.colorWidget()
-
+        
     def colorWidget(self):
         self.setStyleSheet('background-color: ' + self.colorPallete['background'])
         self.menu.colorWidget(self.colorPallete)
@@ -118,7 +158,7 @@ def loadTheme(path: String) -> String:
 
 if __name__ == "__main__":
     
-    colors = loadTheme('./themes/darkTheme.json')
+    colors = loadTheme('./themes/lightTheme.json')
     app = QtWidgets.QApplication([])
 
     widget = GuitarTuner(colors)
