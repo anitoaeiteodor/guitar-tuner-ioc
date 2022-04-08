@@ -8,6 +8,7 @@ from playsound import playsound
 import threading
 import ttsAndstt
 import time
+from eyeTracking import EyeTracker
 
 command = ''
 
@@ -139,12 +140,21 @@ class GuitarTuner(QtWidgets.QWidget):
         self.menu = MenuButtons()
         self.layout.addWidget(self.menu)
 
+        self.eyeButton = QtWidgets.QPushButton('Eye Tracker')
+        self.layout.addWidget(self.eyeButton)
+        
+        self.eyeTracker = EyeTracker()
+
+        self.eyeButton.clicked.connect(self.eyeTracker.start)
+
         self.colorWidget()
         
     def colorWidget(self):
         self.setStyleSheet('background-color: ' + self.colorPallete['background'])
         self.menu.colorWidget(self.colorPallete)
         self.mainDisplay.colorWidget(self.colorPallete)
+        self.eyeButton.setStyleSheet('background-color: ' + self.colorPallete['background'])
+
 
 
 def loadTheme(path: String) -> String:
@@ -157,7 +167,6 @@ def loadTheme(path: String) -> String:
 
 
 if __name__ == "__main__":
-    
     colors = loadTheme('./themes/lightTheme.json')
     app = QtWidgets.QApplication([])
 
